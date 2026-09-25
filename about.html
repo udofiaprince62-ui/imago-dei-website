@@ -10,6 +10,82 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <script src="nav.js" defer></script>
+    <style>
+        .about-content {
+            width: min(1100px, 92%);
+            margin: 0 auto;
+        }
+
+        .founder-layout {
+            display: grid;
+            grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
+            gap: clamp(1rem, 3vw, 2rem);
+            align-items: stretch;
+        }
+
+        .founder-card,
+        .founder-profile {
+            min-width: 0;
+            height: 100%;
+        }
+
+        .founder-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: clamp(0.75rem, 2vw, 1.5rem);
+        }
+
+        .founder-photo {
+            display: block;
+            width: min(100%, 280px);
+            height: auto;
+            max-height: 360px;
+            aspect-ratio: 4 / 5;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+
+        .founder-profile .card-body {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .ministry-card {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .founder-layout {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .founder-photo {
+                width: min(100%, 240px);
+                max-height: 280px;
+                aspect-ratio: 4 / 3;
+            }
+
+            .founder-profile .card-body {
+                display: block;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .about-content {
+                width: calc(100% - 2rem);
+            }
+
+            .founder-photo {
+                width: min(100%, 190px);
+                max-height: 230px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -29,53 +105,54 @@
         </div>
     </section>
 
-    <section class="content-section">
-        <div class="container founder-layout">
-            <div class="card founder-card">
-                <div class="card-body founder-visual">
-                    <img src="Founders.jpg" alt="Father C.Y." class="founder-photo">
-                </div>
-            </div>
+    <main>
+        <section class="content-section">
+            <div class="about-content founder-layout">
+                <article class="card founder-card">
+                    <div class="card-body founder-visual">
+                        <img src="Founders.jpg" alt="Father C.Y." class="founder-photo">
+                    </div>
+                </article>
 
-            <div class="card founder-profile">
-                <div class="card-body">
-                    <h2>Father C.Y.</h2>
-                    <p>
-                        Father C.Y. is a devoted servant of God whose life is marked by prayer,
-                        wisdom, and a deep passion for spiritual revival. He carries a strong
-                        burden for people to encounter the love of Christ and be encouraged in
-                        their faith.
-                    </p>
-                    <p>
-                        Through Imago Dei Prophetic Outreach, Father C.Y. continues to lead with
-                        humility, compassion, and prophetic insight, inspiring others to grow in
-                        faith, prayer, and obedience to God.
-                    </p>
-                </div>
+                <article class="card founder-profile">
+                    <div class="card-body">
+                        <h2>Father C.Y.</h2>
+                        <p>
+                            Father C.Y. is a devoted servant of God whose life is marked by prayer,
+                            wisdom, and a deep passion for spiritual revival. He carries a strong
+                            burden for people to encounter the love of Christ and be encouraged in
+                            their faith.
+                        </p>
+                        <p>
+                            Through Imago Dei Prophetic Outreach, Father C.Y. continues to lead with
+                            humility, compassion, and prophetic insight, inspiring others to grow in
+                            faith, prayer, and obedience to God.
+                        </p>
+                    </div>
+                </article>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="content-section">
-        <div class="container">
-            <div class="card founder-card">
-                <div class="card-body">
-                    <h2>About Our Ministry</h2>
-                    <p>
-                        Imago Dei Prophetic Outreach exists to declare God's prophetic voice,
-                        encourage prayer and worship, and help restore lives through the
-                        transforming power of Christ.
-                    </p>
-
-                    <h3>Our Vision</h3>
-                    <p>
-                        To reflect the glory of God and serve people through faith, prayer,
-                        prophetic ministry, and spiritual encouragement.
-                    </p>
-                </div>
+        <section class="content-section">
+            <div class="about-content">
+                <article class="card founder-card ministry-card">
+                    <div class="card-body">
+                        <h2>About Our Ministry</h2>
+                        <p>
+                            Imago Dei Prophetic Outreach exists to declare God's prophetic voice,
+                            encourage prayer and worship, and help restore lives through the
+                            transforming power of Christ.
+                        </p>
+                        <h3>Our Vision</h3>
+                        <p>
+                            To reflect the glory of God and serve people through faith, prayer,
+                            prophetic ministry, and spiritual encouragement.
+                        </p>
+                    </div>
+                </article>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
     <footer>
         <div class="container">
