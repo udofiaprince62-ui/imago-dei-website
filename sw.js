@@ -1,4 +1,4 @@
-const CACHE_NAME = 'imago-dei-v3';
+const CACHE_NAME = 'imago-dei-v4';
 const APP_SHELL = ['./','./index.html','./about.html','./admin.html','./blogs.html','./gallery.html','./videos.html','./content-store.js','./nav.js','./style.css','./manifest.json','./logo.jpg'];
 
 self.addEventListener('install', event => {
