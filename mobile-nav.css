@@ -1,0 +1,72 @@
+/* Responsive menu layout. No background declarations are changed here. */
+.mobile-nav-toggle,
+.mobile-nav-menu {
+    display: none;
+}
+.desktop-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 8px 16px;
+}
+.desktop-nav-links a {
+    color: #e0e0e0;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+.desktop-nav-links a:hover,
+.desktop-nav-links a.active {
+    color: var(--accent-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 3px;
+}
+@media (max-width: 768px) {
+    .nav-container { position: relative; }
+    nav { position: relative; width: auto; }
+    .desktop-nav-links { display: none; }
+    .mobile-nav-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        min-height: 44px;
+        padding: 10px 14px;
+        border: 1px solid var(--accent-color);
+        border-radius: 6px;
+        background: transparent;
+        color: #fff;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .mobile-nav-toggle:hover { background: rgba(212, 175, 55, .16); }
+    .menu-icon { font-size: 1.25rem; line-height: 1; }
+    .mobile-nav-menu {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 8px);
+        z-index: 1200;
+        display: grid;
+        min-width: 190px;
+        padding: 8px;
+        border-radius: 8px;
+        background: var(--primary-color);
+        box-shadow: 0 6px 18px rgba(0,0,0,.3);
+    }
+    .mobile-nav-menu[hidden] { display: none; }
+    .mobile-nav-menu a {
+        display: block;
+        margin: 0;
+        padding: 12px 14px;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+    .mobile-nav-menu a:hover,
+    .mobile-nav-menu a.active { color: var(--accent-color); background: rgba(255,255,255,.08); }
+}
+@media (max-width: 480px) {
+    .nav-container { justify-content: space-between; }
+    .mobile-nav-menu { right: -4px; min-width: 200px; }
+}
