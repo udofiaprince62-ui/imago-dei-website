@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Host Dashboard - Imago Dei</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<header>
+    <div class="container nav-container">
+        <a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a>
+        <nav aria-label="Main navigation">
+            <a href="index.html">Home</a><a href="videos.html">Videos</a><a href="blogs.html">Blogs</a><a href="gallery.html">Images</a><a href="about.html">About Us</a>
+        </nav>
+    </div>
+</header>
+
+<main class="content-section">
+    <div class="container admin-page">
+        <div class="section-title">
+            <h1>Host Dashboard</h1>
+            <p>Add live video links, images, and blog posts.</p>
+        </div>
+        <div class="notice warning"><strong>Important:</strong> This GitHub Pages version saves content in this browser only. It is not a secure login or shared database. Firebase storage and authentication are required for visitors on other devices to see uploads.</div>
+
+        <div class="admin-grid">
+            <section class="card card-body">
+                <h2>Add a live video</h2>
+                <form id="video-form">
+                    <label for="video-title">Title</label><input id="video-title" required maxlength="100">
+                    <label for="video-url">Live video URL</label><input id="video-url" type="url" placeholder="https://youtube.com/live/..." required>
+                    <label for="video-description">Description</label><textarea id="video-description" rows="4" maxlength="500"></textarea>
+                    <button type="submit">Add live video</button>
+                </form>
+            </section>
+
+            <section class="card card-body">
+                <h2>Publish a blog</h2>
+                <form id="blog-form">
+                    <label for="blog-title">Title</label><input id="blog-title" required maxlength="120">
+                    <label for="blog-body">Blog content</label><textarea id="blog-body" rows="7" required maxlength="5000"></textarea>
+                    <button type="submit">Publish blog</button>
+                </form>
+            </section>
+
+            <section class="card card-body">
+                <h2>Add an image</h2>
+                <form id="image-form">
+                    <label for="image-title">Image title</label><input id="image-title" required maxlength="100">
+                    <label for="image-file">Choose image</label><input id="image-file" type="file" accept="image/*" required>
+                    <button type="submit">Add image</button>
+                </form>
+            </section>
+        </div>
+
+        <section class="card card-body admin-tools">
+            <h2>Local content tools</h2>
+            <p id="admin-status" class="form-status" role="status"></p>
+            <button type="button" class="danger-button" id="clear-content">Delete content saved in this browser</button>
+        </section>
+    </div>
+</main>
+<footer><div class="container"><p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p><p class="footer-sub">Reflecting the glory of God to the world</p></div></footer>
+
+<script>
+const keys = { videos: 'imago-dei-videos', blogs: 'imago-dei-blogs', images: 'imago-dei-images' };
+const get = key => JSON.parse(localStorage.getItem(key) || '[]');
+const save = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+const status = message => document.getElementById('admin-status').textContent = message;
+
+document.getElementById('video-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const videos = get(keys.videos);
+    videos.unshift({ title: document.getElementById('video-title').value.trim(), url: document.getElementById('video-url').value.trim(), description: document.getElementById('video-description').value.trim(), date: new Date().toLocaleDateString() });
+    save(keys.videos, videos); event.target.reset(); status('Live video added on this browser.');
+});
+
+document.getElementById('blog-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const blogs = get(keys.blogs);
+    blogs.unshift({ title: document.getElementById('blog-title').value.trim(), body: document.getElementById('blog-body').value.trim(), date: new Date().toLocaleDateString() });
+    save(keys.blogs, blogs); event.target.reset(); status('Blog published on this browser.');
+});
+
+document.getElementById('image-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const file = document.getElementById('image-file').files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { status('Please choose an image smaller than 2 MB.'); return; }
+    const reader = new FileReader();
+    reader.onload = () => { const images = get(keys.images); images.unshift({ title: document.getElementById('image-title').value.trim(), src: reader.result, date: new Date().toLocaleDateString() }); save(keys.images, images); event.target.reset(); status('Image added on this browser.'); };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('clear-content').addEventListener('click', () => { if (confirm('Delete locally saved videos, blogs, and images?')) { Object.values(keys).forEach(key => localStorage.removeItem(key)); status('Local content deleted.'); } });
+</script>
+</body>
+</html>
