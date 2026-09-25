@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comments - Imago Dei Prophetic Outreach</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container nav-container">
+            <a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a>
+            <nav aria-label="Main navigation">
+                <a href="index.html">Home</a>
+                <a href="videos.html">Videos</a>
+                <a href="blogs.html">Blogs</a>
+                <a href="comments.html" class="active">Comments</a>
+                <a href="about.html">About Us</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero page-hero">
+        <div class="container">
+            <h1>Share Your Encouragement</h1>
+            <p>Tell us how a prayer session, video, or blog encouraged you.</p>
+        </div>
+    </section>
+
+    <main class="content-section">
+        <div class="container comments-layout">
+            <section class="card card-body">
+                <h2>Leave a Comment</h2>
+                <p class="form-note">Comments are shown in this browser for now. A shared comment system requires a database service such as Firebase.</p>
+                <form id="comment-form">
+                    <label for="name">Name</label>
+                    <input id="name" name="name" type="text" required maxlength="60" autocomplete="name">
+
+                    <label for="message">Comment</label>
+                    <textarea id="message" name="message" rows="5" required maxlength="500"></textarea>
+
+                    <button type="submit">Post Comment</button>
+                    <p id="form-status" class="form-status" role="status"></p>
+                </form>
+            </section>
+
+            <section class="card card-body">
+                <h2>Community Comments</h2>
+                <div id="comments-list" class="comments-list"><p class="empty-state">Be the first to share an encouragement.</p></div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p>
+            <p class="footer-sub">Reflecting the glory of God to the world</p>
+        </div>
+    </footer>
+
+    <script>
+        const form = document.getElementById('comment-form');
+        const list = document.getElementById('comments-list');
+        const status = document.getElementById('form-status');
+        const storageKey = 'imago-dei-comments';
+
+        function renderComments() {
+            const comments = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            list.innerHTML = comments.length ? '' : '<p class="empty-state">Be the first to share an encouragement.</p>';
+            comments.forEach(comment => {
+                const item = document.createElement('article');
+                item.className = 'comment-item';
+                item.innerHTML = `<strong></strong><small></small><p></p>`;
+                item.querySelector('strong').textContent = comment.name;
+                item.querySelector('small').textContent = comment.date;
+                item.querySelector('p').textContent = comment.message;
+                list.appendChild(item);
+            });
+        }
+
+        form.addEventListener('submit', event => {
+            event.preventDefault();
+            const data = new FormData(form);
+            const comments = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            comments.unshift({
+                name: data.get('name').trim(),
+                message: data.get('message').trim(),
+                date: new Date().toLocaleDateString()
+            });
+            localStorage.setItem(storageKey, JSON.stringify(comments));
+            form.reset();
+            status.textContent = 'Thank you for sharing your encouragement.';
+            renderComments();
+        });
+
+        renderComments();
+    </script>
+</body>
+</html>
