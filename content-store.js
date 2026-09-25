@@ -7,7 +7,10 @@
 <link rel="stylesheet" href="mobile-nav.css">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script><script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="content-store.js"></script>
 <script src="nav.js" defer></script>
 </head>
 <body>
@@ -23,33 +26,135 @@
 </div></div></main>
 <footer><div class="container"><p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p><p class="footer-sub">Reflecting the glory of God to the world</p></div></footer>
 <script>
-const status = message => document.getElementById('admin-status').textContent = message;
-const configured = !!window.firebaseConfig && !!window.firebaseConfig.projectId && !window.firebaseConfig.projectId.includes('YOUR_PROJECT');
-let db = null, storage = null;
-if (configured) { firebase.initializeApp(window.firebaseConfig); db = firebase.firestore(); storage = firebase.storage(); document.getElementById('mode').textContent = 'Firebase shared mode.'; }
-else { document.getElementById('mode').textContent = 'Local browser mode. Add Firebase values to enable shared publishing.'; }
-const key = type => `imago-dei-${type}`;
-const read = type => JSON.parse(localStorage.getItem(key(type)) || '[]');
-const write = (type, value) => localStorage.setItem(key(type), JSON.stringify(value));
-const readAll = () => JSON.parse(localStorage.getItem('imago-dei-content') || '[]');
-const writeAll = value => localStorage.setItem('imago-dei-content', JSON.stringify(value));
+const status = (message) => {
+  const el = document.getElementById('admin-status');
+  if (el) el.textContent = message;
+};
+
+const configured = !!window.firebaseConfig && !!window.firebaseConfig.projectId && !String(window.firebaseConfig.projectId).includes('YOUR_PROJECT');
+let db = null;
+let storage = null;
+
+if (configured && window.firebase) {
+  if (!firebase.apps.length) firebase.initializeApp(window.firebaseConfig);
+  db = firebase.firestore();
+  storage = firebase.storage ? firebase.storage() : null;
+  document.getElementById('mode').textContent = 'Firebase shared mode.';
+} else {
+  document.getElementById('mode').textContent = 'Local browser mode. Add Firebase values to enable shared publishing.';
+}
+
+const readAll = () => {
+  try {
+    return JSON.parse(localStorage.getItem('imago-dei-content') || '[]');
+  } catch (error) {
+    return [];
+  }
+};
+
+const writeAll = (value) => {
+  localStorage.setItem('imago-dei-content', JSON.stringify(value));
+};
+
 const date = () => new Date().toLocaleDateString();
-const dataUrl = file => new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = reject; r.readAsDataURL(file); });
-async function upload(file, folder) { const ref = storage.ref(`${folder}/${Date.now()}-${file.name}`); const snap = await ref.put(file); return snap.ref.getDownloadURL(); }
+const dataUrl = (file) => new Promise((resolve, reject) => {
+  const r = new FileReader();
+  r.onload = () => resolve(r.result);
+  r.onerror = reject;
+  r.readAsDataURL(file);
+});
+
+async function upload(file, folder) {
+  const ref = storage.ref(`${folder}/${Date.now()}-${file.name}`);
+  const snap = await ref.put(file);
+  return snap.ref.getDownloadURL();
+}
+
 async function publish(type, item, file, folder) {
-  const itemWithType = { ...item, type, createdAt: Date.now(), date: item.date || date() };
+  const itemWithType = {
+    ...item,
+    type,
+    createdAt: Date.now(),
+    date: item.date || date()
+  };
+
   if (!configured) {
     if (file) itemWithType.src = await dataUrl(file);
     const values = readAll();
     values.unshift(itemWithType);
     writeAll(values);
-    return;
+    return itemWithType;
   }
+
   if (file) itemWithType.url = await upload(file, folder);
   await db.collection('content').add({ ...itemWithType, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+  return itemWithType;
 }
-function busy(form, value) { form.querySelector('button').disabled = value; }
-document.getElementById('video-form').addEventListener('submit', async e => { e.preventDefault(); const f=e.target, file=document.getElementById('video-file').files[0]; if(!file)return; busy(f,true); try { await publish('video',{title:document.getElementById('video-title').value, description:document.getElementById('video-description').value, url: '', date: date()}, file,'videos'); status('Video published.'); f.reset(); } catch (error) { status('Publish failed: ' + error.message); } finally { busy(f,false); } });
-document.getElementById('image-form').addEventListener('submit', async e => { e.preventDefault(); const f=e.target, file=document.getElementById('image-file').files[0]; if(!file)return; busy(f,true); try { await publish('image',{title:document.getElementById('image-title').value, date:date()}, file,'images'); status('Image published.'); f.reset(); } catch (error) { status('Publish failed: ' + error.message); } finally { busy(f,false); } });
-document.getElementById('message-form').addEventListener('submit', async e => { e.preventDefault(); const f=e.target; busy(f,true); try { await publish('message',{title:document.getElementById('message-title').value, body:document.getElementById('message-body').value, date:date()}, null,'messages'); status('Message published.'); f.reset(); } catch (error) { status('Publish failed: ' + error.message); } finally { busy(f,false); } });
+
+function busy(form, value) {
+  form.querySelector('button').disabled = value;
+}
+
+document.getElementById('video-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const file = document.getElementById('video-file').files[0];
+  if (!file) return;
+
+  busy(form, true);
+  try {
+    await publish('video', {
+      title: document.getElementById('video-title').value,
+      description: document.getElementById('video-description').value,
+      date: date()
+    }, file, 'videos');
+    status('Video published.');
+    form.reset();
+  } catch (error) {
+    status('Publish failed: ' + error.message);
+  } finally {
+    busy(form, false);
+  }
+});
+
+document.getElementById('image-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const file = document.getElementById('image-file').files[0];
+  if (!file) return;
+
+  busy(form, true);
+  try {
+    await publish('image', {
+      title: document.getElementById('image-title').value,
+      date: date()
+    }, file, 'images');
+    status('Image published.');
+    form.reset();
+  } catch (error) {
+    status('Publish failed: ' + error.message);
+  } finally {
+    busy(form, false);
+  }
+});
+
+document.getElementById('message-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+
+  busy(form, true);
+  try {
+    await publish('message', {
+      title: document.getElementById('message-title').value,
+      body: document.getElementById('message-body').value,
+      date: date()
+    }, null, 'messages');
+    status('Message published.');
+    form.reset();
+  } catch (error) {
+    status('Publish failed: ' + error.message);
+  } finally {
+    busy(form, false);
+  }
+});
 </script></body></html>

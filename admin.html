@@ -16,85 +16,80 @@
     <script src="nav.js" defer></script>
 </head>
 <body>
-<header>
-    <div class="container nav-container">
-        <a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a>
-        <nav aria-label="Main navigation">
-            <a href="index.html">Home</a>
-            <a href="videos.html">Videos</a>
-            <a href="blogs.html">Messages</a>
-            <a href="gallery.html" class="active">Images</a>
-            <a href="admin.html">Publish</a>
-            <a href="about.html">About Us</a>
-        </nav>
-    </div>
-</header>
+    <header>
+        <div class="container nav-container">
+            <a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a>
+            <nav aria-label="Main navigation">
+                <a href="index.html">Home</a>
+                <a href="videos.html">Videos</a>
+                <a href="blogs.html">Messages</a>
+                <a href="gallery.html" class="active">Images</a>
+                <a href="admin.html">Publish</a>
+                <a href="about.html">About Us</a>
+            </nav>
+        </div>
+    </header>
 
-<section class="hero page-hero">
-    <div class="container">
-        <h1>Ministry Images</h1>
-        <p>Photos and images shared by the ministry.</p>
-    </div>
-</section>
+    <section class="hero page-hero">
+        <div class="container">
+            <h1>Ministry Images</h1>
+            <p>Photos and images shared by the ministry.</p>
+        </div>
+    </section>
 
-<main class="content-section">
-    <div class="container">
-        <div id="gallery" class="image-grid"></div>
-        <p id="empty" class="empty-state">No images have been published yet.</p>
-    </div>
-</main>
+    <main class="content-section">
+        <div class="container">
+            <div id="gallery" class="image-grid"></div>
+            <p id="empty" class="empty-state">No images have been published yet.</p>
+        </div>
+    </main>
 
-<footer>
-    <div class="container">
-        <p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p>
-        <p class="footer-sub">Reflecting the glory of God to the world</p>
-    </div>
-</footer>
+    <footer>
+        <div class="container">
+            <p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p>
+            <p class="footer-sub">Reflecting the glory of God to the world</p>
+        </div>
+    </footer>
 
-<script>
-function renderGallery(items) {
-    const gallery = document.getElementById('gallery');
-    const empty = document.getElementById('empty');
-    if (!gallery) return;
+    <script>
+    function renderGallery(items) {
+        const gallery = document.getElementById('gallery');
+        const empty = document.getElementById('empty');
+        if (!gallery) return;
 
-    gallery.innerHTML = '';
-    const normalized = (items || []).filter(item => (window.ContentStore ? window.ContentStore.normalise(item).type : item.type) === 'image');
-    empty.hidden = normalized.length > 0;
+        gallery.innerHTML = '';
+        const images = (items || []).filter(item => (window.ContentStore ? window.ContentStore.normalise(item).type : item.type) === 'image');
+        empty.hidden = images.length > 0;
 
-    normalized.forEach(item => {
-        const article = document.createElement('article');
-        article.className = 'card image-card';
+        images.forEach((item) => {
+            const article = document.createElement('article');
+            article.className = 'card image-card';
 
-        const img = document.createElement('img');
-        img.src = item.url;
-        img.alt = item.title || 'Ministry image';
+            const img = document.createElement('img');
+            img.src = item.url || '';
+            img.alt = item.title || 'Ministry image';
 
-        const body = document.createElement('div');
-        body.className = 'card-body';
+            const body = document.createElement('div');
+            body.className = 'card-body';
 
-        const title = document.createElement('h3');
-        title.textContent = item.title || 'Untitled image';
+            const title = document.createElement('h3');
+            title.textContent = item.title || 'Untitled image';
 
-        const date = document.createElement('span');
-        date.className = 'post-date';
-        date.textContent = item.date || 'Recently published';
+            const date = document.createElement('span');
+            date.className = 'post-date';
+            date.textContent = item.date || 'Recently published';
 
-        body.append(title, date);
-        article.append(img, body);
-        gallery.appendChild(article);
-    });
-}
+            body.append(title, date);
+            article.append(img, body);
+            gallery.appendChild(article);
+        });
+    }
 
-if (window.ContentStore) {
-    window.ContentStore.subscribe('image', renderGallery);
-} else {
-    try {
-        const localItems = JSON.parse(localStorage.getItem('imago-dei-content') || '[]');
-        renderGallery(localItems);
-    } catch (error) {
+    if (window.ContentStore) {
+        window.ContentStore.subscribe('image', renderGallery);
+    } else {
         renderGallery([]);
     }
-}
-</script>
+    </script>
 </body>
 </html>

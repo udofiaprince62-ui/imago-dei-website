@@ -16,85 +16,81 @@
     <script src="nav.js" defer></script>
 </head>
 <body>
-<header>
-    <div class="container nav-container">
-        <a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a>
-        <nav aria-label="Main navigation">
-            <a href="index.html">Home</a>
-            <a href="videos.html">Videos</a>
-            <a href="blogs.html" class="active">Messages</a>
-            <a href="gallery.html">Images</a>
-            <a href="admin.html">Publish</a>
-            <a href="about.html">About Us</a>
-        </nav>
-    </div>
-</header>
+    <header>
+        <div class="container nav-container">
+            <a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a>
+            <nav aria-label="Main navigation">
+                <a href="index.html">Home</a>
+                <a href="videos.html">Videos</a>
+                <a href="blogs.html" class="active">Messages</a>
+                <a href="gallery.html">Images</a>
+                <a href="admin.html">Publish</a>
+                <a href="about.html">About Us</a>
+            </nav>
+        </div>
+    </header>
 
-<section class="hero page-hero">
-    <div class="container">
-        <h1>Faith &amp; Encouragement</h1>
-        <p>Read messages, prayer guides, and updates from Imago Dei.</p>
-    </div>
-</section>
+    <section class="hero page-hero">
+        <div class="container">
+            <h1>Faith &amp; Encouragement</h1>
+            <p>Read messages, prayer guides, and updates from Imago Dei.</p>
+        </div>
+    </section>
 
-<main class="content-section">
-    <div class="container post-list" id="message-list"></div>
-</main>
+    <main class="content-section">
+        <div class="container post-list" id="message-list"></div>
+    </main>
 
-<footer>
-    <div class="container">
-        <p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p>
-        <p class="footer-sub">Reflecting the glory of God to the world</p>
-    </div>
-</footer>
+    <footer>
+        <div class="container">
+            <p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p>
+            <p class="footer-sub">Reflecting the glory of God to the world</p>
+        </div>
+    </footer>
 
-<script>
-function renderMessages(items) {
-    const list = document.getElementById('message-list');
-    if (!list) return;
-    list.innerHTML = '';
+    <script>
+    function renderMessages(items) {
+        const list = document.getElementById('message-list');
+        if (!list) return;
+        list.innerHTML = '';
 
-    const normalized = (items || []).filter(item => (window.ContentStore ? window.ContentStore.normalise(item).type : item.type) === 'message');
-    if (!normalized.length) {
-        const empty = document.createElement('p');
-        empty.className = 'empty-state';
-        empty.textContent = 'No messages have been published yet.';
-        list.appendChild(empty);
-        return;
+        const messages = (items || []).filter(item => (window.ContentStore ? window.ContentStore.normalise(item).type : item.type) === 'message');
+        if (!messages.length) {
+            const empty = document.createElement('p');
+            empty.className = 'empty-state';
+            empty.textContent = 'No messages have been published yet.';
+            list.appendChild(empty);
+            return;
+        }
+
+        messages.forEach((item) => {
+            const article = document.createElement('article');
+            article.className = 'card blog-post';
+
+            const body = document.createElement('div');
+            body.className = 'card-body';
+
+            const date = document.createElement('span');
+            date.className = 'post-date';
+            date.textContent = item.date || 'Recently published';
+
+            const title = document.createElement('h2');
+            title.textContent = item.title || 'Untitled message';
+
+            const text = document.createElement('p');
+            text.textContent = item.body || '';
+
+            body.append(date, title, text);
+            article.appendChild(body);
+            list.appendChild(article);
+        });
     }
 
-    normalized.forEach(item => {
-        const article = document.createElement('article');
-        article.className = 'card blog-post';
-        const body = document.createElement('div');
-        body.className = 'card-body';
-
-        const date = document.createElement('span');
-        date.className = 'post-date';
-        date.textContent = item.date || 'Recently published';
-
-        const title = document.createElement('h2');
-        title.textContent = item.title || 'Untitled message';
-
-        const text = document.createElement('p');
-        text.textContent = item.body || '';
-
-        body.append(date, title, text);
-        article.appendChild(body);
-        list.appendChild(article);
-    });
-}
-
-if (window.ContentStore) {
-    window.ContentStore.subscribe('message', renderMessages);
-} else {
-    try {
-        const localItems = JSON.parse(localStorage.getItem('imago-dei-content') || '[]');
-        renderMessages(localItems);
-    } catch (error) {
+    if (window.ContentStore) {
+        window.ContentStore.subscribe('message', renderMessages);
+    } else {
         renderMessages([]);
     }
-}
-</script>
+    </script>
 </body>
 </html>
