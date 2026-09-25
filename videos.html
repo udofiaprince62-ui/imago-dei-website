@@ -1,66 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Videos - Imago Dei Prophetic Outreach</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <div class="container nav-container">
-            <a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a>
-            <nav aria-label="Main navigation">
-                <a href="index.html">Home</a>
-                <a href="videos.html" class="active">Videos</a>
-                <a href="blogs.html">Blogs</a>
-                <a href="comments.html">Comments</a>
-                <a href="about.html">About Us</a>
-            </nav>
-        </div>
-    </header>
-
-    <section class="hero page-hero">
-        <div class="container">
-            <h1>Prayer &amp; Adoration Videos</h1>
-            <p>Join us in prayer, worship, teaching, and prophetic encouragement.</p>
-        </div>
-    </section>
-
-    <main class="content-section">
-        <div class="container">
-            <div class="section-title">
-                <h2>Latest Sessions</h2>
-                <p>New sessions can be added here by the ministry host.</p>
-            </div>
-
-            <div class="video-grid">
-                <article class="card video-card">
-                    <div class="video-frame">
-                        <iframe src="https://www.youtube.com/embed/VIDEO_ID" title="Hour of Divine Restoration" allowfullscreen></iframe>
-                    </div>
-                    <div class="card-body">
-                        <h3>Hour of Divine Restoration</h3>
-                        <span class="post-date">Prayer session</span>
-                        <p>Intercessory prayers for healing, spiritual breakthrough, and divine direction.</p>
-                    </div>
-                </article>
-            </div>
-
-            <div class="notice">
-                <strong>For the host:</strong> replace <code>VIDEO_ID</code> in this file with the YouTube video ID when a new session is ready.
-            </div>
-        </div>
-    </main>
-
-    <footer>
-        <div class="container">
-            <p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p>
-            <p class="footer-sub">Reflecting the glory of God to the world</p>
-        </div>
-    </footer>
-</body>
-</html>
+<header><div class="container nav-container"><a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a><nav aria-label="Main navigation"><a href="index.html">Home</a><a href="videos.html" class="active">Videos</a><a href="blogs.html">Messages</a><a href="gallery.html">Images</a><a href="admin.html">Publish</a><a href="about.html">About Us</a></nav></div></header>
+<section class="hero page-hero"><div class="container"><h1>Prayer &amp; Adoration Videos</h1><p>Join us in prayer, worship, teaching, and prophetic encouragement.</p></div></section>
+<main class="content-section"><div class="container"><div class="section-title"><h2>Latest Sessions</h2><p>New sessions published from the host dashboard appear here.</p></div><div id="video-list" class="video-grid"></div><p id="empty" class="empty-state">No uploaded videos yet. The host can publish one from the Publish page.</p></div></main>
+<footer><div class="container"><p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p><p class="footer-sub">Reflecting the glory of God to the world</p></div></footer>
+<script>
+const videos = JSON.parse(localStorage.getItem('imago-dei-videos') || '[]');
+const list = document.getElementById('video-list');
+document.getElementById('empty').hidden = videos.length > 0;
+videos.forEach(video => {
+    const article = document.createElement('article'); article.className = 'card video-card';
+    const frame = document.createElement('div'); frame.className = 'video-frame';
+    const player = document.createElement('video'); player.controls = true; player.preload = 'metadata'; player.src = video.src; player.setAttribute('aria-label', video.title); frame.appendChild(player);
+    const body = document.createElement('div'); body.className = 'card-body';
+    const title = document.createElement('h3'); title.textContent = video.title;
+    const date = document.createElement('span'); date.className = 'post-date'; date.textContent = video.date || 'Recently published';
+    const description = document.createElement('p'); description.textContent = video.description || '';
+    body.append(title, date, description); article.append(frame, body); list.appendChild(article);
+});
+</script>
+</body></html>

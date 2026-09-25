@@ -1,6 +1,2 @@
-/* --- Upload page additions --- */
-.helper-text { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px; }
-#admin-status { margin-bottom: 16px; }
-.content-summary { color: var(--text-muted); margin: 8px 0 18px; font-weight: 600; }
-input[type="file"] { padding: 9px; background: #f8fafc; }
-
+/* Uploaded video player */
+.video-frame video { width: 100%; height: 100%; display: block; object-fit: contain; }

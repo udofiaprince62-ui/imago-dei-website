@@ -1,65 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blogs - Imago Dei Prophetic Outreach</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - Imago Dei Prophetic Outreach</title><link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <div class="container nav-container">
-            <a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a>
-            <nav aria-label="Main navigation">
-                <a href="index.html">Home</a>
-                <a href="videos.html">Videos</a>
-                <a href="blogs.html" class="active">Blogs</a>
-                <a href="comments.html">Comments</a>
-                <a href="about.html">About Us</a>
-            </nav>
-        </div>
-    </header>
-
-    <section class="hero page-hero">
-        <div class="container">
-            <h1>Faith &amp; Encouragement</h1>
-            <p>Read reflections, prayer guides, and updates from Imago Dei.</p>
-        </div>
-    </section>
-
-    <main class="content-section">
-        <div class="container post-list">
-            <article class="card blog-post">
-                <div class="card-body">
-                    <span class="post-date">Prayer &bull; Posted recently</span>
-                    <h2>Making Room for Prayer</h2>
-                    <p>Prayer is an invitation to draw near to God. Set aside a quiet moment today, bring your heart honestly before Him, and trust that He hears you.</p>
-                    <p>May this time strengthen your faith, renew your hope, and help you walk in love toward others.</p>
-                </div>
-            </article>
-
-            <article class="card blog-post">
-                <div class="card-body">
-                    <span class="post-date">Encouragement &bull; Ministry update</span>
-                    <h2>Created to Reflect God’s Glory</h2>
-                    <p>Imago Dei means “image of God.” Every person has dignity and purpose. Our ministry exists to encourage people to discover that purpose through prayer, worship, and the transforming power of Christ.</p>
-                </div>
-            </article>
-
-            <div class="notice">
-                <strong>For the host:</strong> duplicate a blog article in this file and edit its title, date, and content to publish a new post.
-            </div>
-        </div>
-    </main>
-
-    <footer>
-        <div class="container">
-            <p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p>
-            <p class="footer-sub">Reflecting the glory of God to the world</p>
-        </div>
-    </footer>
-</body>
-</html>
+<header><div class="container nav-container"><a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a><nav aria-label="Main navigation"><a href="index.html">Home</a><a href="videos.html">Videos</a><a href="blogs.html" class="active">Messages</a><a href="gallery.html">Images</a><a href="admin.html">Publish</a><a href="about.html">About Us</a></nav></div></header>
+<section class="hero page-hero"><div class="container"><h1>Faith &amp; Encouragement</h1><p>Read messages, prayer guides, and updates from Imago Dei.</p></div></section>
+<main class="content-section"><div class="container post-list" id="message-list"></div></main>
+<footer><div class="container"><p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p><p class="footer-sub">Reflecting the glory of God to the world</p></div></footer>
+<script>
+const messages = JSON.parse(localStorage.getItem('imago-dei-messages') || '[]'); const list = document.getElementById('message-list');
+if (!messages.length) { const empty = document.createElement('p'); empty.className = 'empty-state'; empty.textContent = 'No messages have been published yet.'; list.appendChild(empty); }
+messages.forEach(message => { const article = document.createElement('article'); article.className = 'card blog-post'; const body = document.createElement('div'); body.className = 'card-body'; const date = document.createElement('span'); date.className = 'post-date'; date.textContent = message.date || 'Recently published'; const title = document.createElement('h2'); title.textContent = message.title; const text = document.createElement('p'); text.textContent = message.body; body.append(date, title, text); article.appendChild(body); list.appendChild(article); });
+</script>
+</body></html>
