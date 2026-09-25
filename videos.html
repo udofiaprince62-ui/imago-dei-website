@@ -1,30 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Videos - Imago Dei Prophetic Outreach</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
 </head>
 <body>
-<header><div class="container nav-container"><a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a><nav aria-label="Main navigation"><a href="index.html">Home</a><a href="videos.html" class="active">Videos</a><a href="blogs.html">Messages</a><a href="gallery.html">Images</a><a href="admin.html">Publish</a><a href="about.html">About Us</a></nav></div></header>
-<section class="hero page-hero"><div class="container"><h1>Prayer &amp; Adoration Videos</h1><p>Join us in prayer, worship, teaching, and prophetic encouragement.</p></div></section>
-<main class="content-section"><div class="container"><div class="section-title"><h2>Latest Sessions</h2><p>New sessions published from the host dashboard appear here.</p></div><div id="video-list" class="video-grid"></div><p id="empty" class="empty-state">No uploaded videos yet. The host can publish one from the Publish page.</p></div></main>
-<footer><div class="container"><p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p><p class="footer-sub">Reflecting the glory of God to the world</p></div></footer>
+<header>
+    <div class="container nav-container">
+        <a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a>
+        <nav aria-label="Main navigation">
+            <a href="index.html">Home</a>
+            <a href="videos.html" class="active">Videos</a>
+            <a href="blogs.html">Messages</a>
+            <a href="gallery.html">Images</a>
+            <a href="admin.html">Publish</a>
+            <a href="about.html">About Us</a>
+        </nav>
+    </div>
+</header>
+
+<section class="hero page-hero">
+    <div class="container">
+        <h1>Prayer &amp; Adoration Videos</h1>
+        <p>Join us in prayer, worship, teaching, and prophetic encouragement.</p>
+    </div>
+</section>
+
+<main class="content-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Latest Sessions</h2>
+            <p>New sessions published from the admin page appear here.</p>
+        </div>
+        <div id="video-list" class="video-grid"></div>
+        <p id="empty" class="empty-state">No uploaded videos yet. The host can publish one from the Publish page.</p>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p>
+        <p class="footer-sub">Reflecting the glory of God to the world</p>
+    </div>
+</footer>
+
 <script>
-const videos = JSON.parse(localStorage.getItem('imago-dei-videos') || '[]');
-const list = document.getElementById('video-list');
-document.getElementById('empty').hidden = videos.length > 0;
-videos.forEach(video => {
-    const article = document.createElement('article'); article.className = 'card video-card';
-    const frame = document.createElement('div'); frame.className = 'video-frame';
-    const player = document.createElement('video'); player.controls = true; player.preload = 'metadata'; player.src = video.src; player.setAttribute('aria-label', video.title); frame.appendChild(player);
-    const body = document.createElement('div'); body.className = 'card-body';
-    const title = document.createElement('h3'); title.textContent = video.title;
-    const date = document.createElement('span'); date.className = 'post-date'; date.textContent = video.date || 'Recently published';
-    const description = document.createElement('p'); description.textContent = video.description || '';
-    body.append(title, date, description); article.append(frame, body); list.appendChild(article);
-});
+function hasFirebaseConfig() {
+    return !!window.firebaseConfig && window.firebaseConfig.projectId && !window.firebaseConfig.projectId.includes('YOUR_PROJECT');
+}
+if (hasFirebaseConfig()) {
+    firebase.initializeApp(window.firebaseConfig);
+}
+
+const db = hasFirebaseConfig() ? firebase.firestore() : null;
+
+function renderVideos(snapshot) {
+    const list = document.getElementById('video-list');
+    const empty = document.getElementById('empty');
+    list.innerHTML = '';
+    const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    empty.hidden = items.length > 0;
+
+    items.forEach(item => {
+        if (item.type !== 'video') return;
+        const article = document.createElement('article');
+        article.className = 'card video-card';
+        const frame = document.createElement('div');
+        frame.className = 'video-frame';
+        const video = document.createElement('video');
+        video.controls = true;
+        video.preload = 'metadata';
+        video.src = item.url;
+        video.setAttribute('aria-label', item.title);
+        frame.appendChild(video);
+
+        const body = document.createElement('div');
+        body.className = 'card-body';
+        const title = document.createElement('h3');
+        title.textContent = item.title;
+        const date = document.createElement('span');
+        date.className = 'post-date';
+        date.textContent = item.date || 'Recently published';
+        const description = document.createElement('p');
+        description.textContent = item.description || '';
+        body.append(title, date, description);
+        article.append(frame, body);
+        list.appendChild(article);
+    });
+}
+
+if (db) {
+    db.collection('content').orderBy('createdAt', 'desc').onSnapshot(snapshot => renderVideos(snapshot));
+}
 </script>
-</body></html>
+</body>
+</html>

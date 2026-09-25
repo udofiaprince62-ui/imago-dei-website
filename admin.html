@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Publish videos, photos, and prayer messages for Imago Dei Prophetic Outreach.">
+    <meta name="description" content="Publish videos, photos, and messages for Imago Dei Prophetic Outreach.">
     <title>Publish Content - Imago Dei</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+    <script src="firebase-config.js"></script>
 </head>
 <body>
 <header>
@@ -17,7 +21,7 @@
         <nav aria-label="Main navigation">
             <a href="index.html">Home</a>
             <a href="videos.html">Videos</a>
-            <a href="blogs.html">Blogs</a>
+            <a href="blogs.html">Messages</a>
             <a href="gallery.html">Images</a>
             <a href="admin.html" class="active">Publish</a>
             <a href="about.html">About Us</a>
@@ -35,14 +39,15 @@
 <main class="content-section">
     <div class="container admin-page">
         <div class="notice warning">
-            <strong>How this works:</strong> This is a static GitHub Pages site, so uploads are saved in this browser only. They are not sent to GitHub or visible to other visitors. For shared uploads, connect these forms to a storage service such as Firebase or Supabase.
+            <strong>Shared upload setup:</strong> This version uses Firebase so every visitor can see the same content. Add your Firebase project settings in <code>firebase-config.js</code> before using it.
         </div>
 
         <div id="admin-status" class="form-status" role="status" aria-live="polite"></div>
+
         <div class="admin-grid">
             <section class="card card-body">
                 <h2>Upload a video</h2>
-                <p class="helper-text">MP4, WebM, or OGG. Keep files under 20 MB for browser storage.</p>
+                <p class="helper-text">MP4, WebM, or OGG. Keep files under 20 MB.</p>
                 <form id="video-form">
                     <label for="video-title">Video title</label>
                     <input id="video-title" required maxlength="100" placeholder="Evening prayer session">
@@ -56,7 +61,7 @@
 
             <section class="card card-body">
                 <h2>Upload a picture</h2>
-                <p class="helper-text">JPG, PNG, GIF, or WebP. Keep files under 2 MB for browser storage.</p>
+                <p class="helper-text">JPG, PNG, GIF, or WebP. Keep files under 2 MB.</p>
                 <form id="image-form">
                     <label for="image-title">Picture title</label>
                     <input id="image-title" required maxlength="100" placeholder="Worship night">
@@ -78,85 +83,117 @@
                 </form>
             </section>
         </div>
-
-        <section class="card card-body admin-tools">
-            <h2>Content saved in this browser</h2>
-            <div id="content-summary" class="content-summary"></div>
-            <button type="button" class="danger-button" id="clear-content">Delete all local content</button>
-        </section>
     </div>
 </main>
 
-<footer><div class="container"><p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p><p class="footer-sub">Reflecting the glory of God to the world</p></div></footer>
+<footer>
+    <div class="container">
+        <p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p>
+        <p class="footer-sub">Reflecting the glory of God to the world</p>
+    </div>
+</footer>
 
 <script>
-const keys = {
-    videos: 'imago-dei-videos',
-    images: 'imago-dei-images',
-    messages: 'imago-dei-messages'
-};
-const getItems = key => JSON.parse(localStorage.getItem(key) || '[]');
-const saveItems = (key, items) => localStorage.setItem(key, JSON.stringify(items));
 const status = message => document.getElementById('admin-status').textContent = message;
-const fileToDataUrl = file => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('The file could not be read.'));
-    reader.readAsDataURL(file);
-});
-const today = () => new Date().toLocaleDateString();
 
-function refreshSummary() {
-    const counts = [
-        `${getItems(keys.videos).length} video${getItems(keys.videos).length === 1 ? '' : 's'}`,
-        `${getItems(keys.images).length} picture${getItems(keys.images).length === 1 ? '' : 's'}`,
-        `${getItems(keys.messages).length} message${getItems(keys.messages).length === 1 ? '' : 's'}`
-    ];
-    document.getElementById('content-summary').textContent = counts.join(' • ');
+function hasFirebaseConfig() {
+    return !!window.firebaseConfig && window.firebaseConfig.projectId && !window.firebaseConfig.projectId.includes('YOUR_PROJECT');
 }
 
-document.getElementById('video-form').addEventListener('submit', async event => {
+if (!hasFirebaseConfig()) {
+    status('Add your Firebase project details in firebase-config.js before publishing.');
+} else {
+    firebase.initializeApp(window.firebaseConfig);
+}
+
+const db = hasFirebaseConfig() ? firebase.firestore() : null;
+const storage = hasFirebaseConfig() ? firebase.storage() : null;
+
+function uploadFile(file, path) {
+    return new Promise((resolve, reject) => {
+        const fileRef = storage.ref(`${path}/${Date.now()}_${file.name}`);
+        fileRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(resolve).catch(reject);
+    });
+}
+
+async function publishContent(type, payload) {
+    if (!hasFirebaseConfig() || !db) {
+        status('Firebase config is missing. Please add your project details in firebase-config.js.');
+        return;
+    }
+
+    await db.collection('content').add({
+        type,
+        ...payload,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+}
+
+document.getElementById('video-form').addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (!hasFirebaseConfig()) return;
     const file = document.getElementById('video-file').files[0];
     if (!file) return;
-    if (file.size > 20 * 1024 * 1024) { status('Please choose a video smaller than 20 MB.'); return; }
+    if (file.size > 20 * 1024 * 1024) {
+        status('Please choose a video smaller than 20 MB.');
+        return;
+    }
+
     try {
-        const videos = getItems(keys.videos);
-        videos.unshift({ title: document.getElementById('video-title').value.trim(), description: document.getElementById('video-description').value.trim(), src: await fileToDataUrl(file), type: file.type, date: today() });
-        saveItems(keys.videos, videos);
-        event.target.reset(); status('Video published in this browser.'); refreshSummary();
-    } catch (error) { status('The video could not be saved. The browser storage limit may have been reached.'); }
-});
-
-document.getElementById('image-form').addEventListener('submit', async event => {
-    event.preventDefault();
-    const file = document.getElementById('image-file').files[0];
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { status('Please choose a picture smaller than 2 MB.'); return; }
-    try {
-        const images = getItems(keys.images);
-        images.unshift({ title: document.getElementById('image-title').value.trim(), src: await fileToDataUrl(file), date: today() });
-        saveItems(keys.images, images);
-        event.target.reset(); status('Picture published in this browser.'); refreshSummary();
-    } catch (error) { status('The picture could not be saved. The browser storage limit may have been reached.'); }
-});
-
-document.getElementById('message-form').addEventListener('submit', event => {
-    event.preventDefault();
-    const messages = getItems(keys.messages);
-    messages.unshift({ title: document.getElementById('message-title').value.trim(), body: document.getElementById('message-body').value.trim(), date: today() });
-    saveItems(keys.messages, messages);
-    event.target.reset(); status('Message published in this browser.'); refreshSummary();
-});
-
-document.getElementById('clear-content').addEventListener('click', () => {
-    if (confirm('Delete all videos, pictures, and messages saved in this browser?')) {
-        Object.values(keys).forEach(key => localStorage.removeItem(key));
-        status('All local content has been deleted.'); refreshSummary();
+        const url = await uploadFile(file, 'videos');
+        await publishContent('video', {
+            title: document.getElementById('video-title').value.trim(),
+            description: document.getElementById('video-description').value.trim(),
+            url,
+            date: new Date().toLocaleDateString()
+        });
+        event.target.reset();
+        status('Video published successfully.');
+    } catch (error) {
+        status('Upload failed. Check your Firebase Storage rules and project settings.');
     }
 });
 
-refreshSummary();
+document.getElementById('image-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!hasFirebaseConfig()) return;
+    const file = document.getElementById('image-file').files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+        status('Please choose a picture smaller than 2 MB.');
+        return;
+    }
+
+    try {
+        const url = await uploadFile(file, 'images');
+        await publishContent('image', {
+            title: document.getElementById('image-title').value.trim(),
+            url,
+            date: new Date().toLocaleDateString()
+        });
+        event.target.reset();
+        status('Picture published successfully.');
+    } catch (error) {
+        status('Upload failed. Check your Firebase Storage rules and project settings.');
+    }
+});
+
+document.getElementById('message-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!hasFirebaseConfig()) return;
+
+    try {
+        await publishContent('message', {
+            title: document.getElementById('message-title').value.trim(),
+            body: document.getElementById('message-body').value.trim(),
+            date: new Date().toLocaleDateString()
+        });
+        event.target.reset();
+        status('Message published successfully.');
+    } catch (error) {
+        status('Message could not be saved. Check your Firestore rules and project settings.');
+    }
+});
 </script>
 </body>
 </html>

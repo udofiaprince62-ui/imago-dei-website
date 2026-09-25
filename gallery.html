@@ -1,18 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Images - Imago Dei Prophetic Outreach</title><link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Images - Imago Dei Prophetic Outreach</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
 </head>
 <body>
-<header><div class="container nav-container"><a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a><nav aria-label="Main navigation"><a href="index.html">Home</a><a href="videos.html">Videos</a><a href="blogs.html">Messages</a><a href="gallery.html" class="active">Images</a><a href="admin.html">Publish</a><a href="about.html">About Us</a></nav></div></header>
-<section class="hero page-hero"><div class="container"><h1>Ministry Images</h1><p>Photos and images shared by the ministry.</p></div></section>
-<main class="content-section"><div class="container"><div id="gallery" class="image-grid"></div><p id="empty" class="empty-state">No images have been published yet.</p></div></main>
-<footer><div class="container"><p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p><p class="footer-sub">Reflecting the glory of God to the world</p></div></footer>
+<header>
+    <div class="container nav-container">
+        <a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a>
+        <nav aria-label="Main navigation">
+            <a href="index.html">Home</a>
+            <a href="videos.html">Videos</a>
+            <a href="blogs.html">Messages</a>
+            <a href="gallery.html" class="active">Images</a>
+            <a href="admin.html">Publish</a>
+            <a href="about.html">About Us</a>
+        </nav>
+    </div>
+</header>
+
+<section class="hero page-hero">
+    <div class="container">
+        <h1>Ministry Images</h1>
+        <p>Photos and images shared by the ministry.</p>
+    </div>
+</section>
+
+<main class="content-section">
+    <div class="container">
+        <div id="gallery" class="image-grid"></div>
+        <p id="empty" class="empty-state">No images have been published yet.</p>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p>
+        <p class="footer-sub">Reflecting the glory of God to the world</p>
+    </div>
+</footer>
+
 <script>
-const images = JSON.parse(localStorage.getItem('imago-dei-images') || '[]'); const gallery = document.getElementById('gallery'); document.getElementById('empty').hidden = images.length > 0;
-images.forEach(image => { const article = document.createElement('article'); article.className = 'card image-card'; const img = document.createElement('img'); img.src = image.src; img.alt = image.title; const body = document.createElement('div'); body.className = 'card-body'; const title = document.createElement('h3'); title.textContent = image.title; const date = document.createElement('span'); date.className = 'post-date'; date.textContent = image.date || 'Recently published'; body.append(title, date); article.append(img, body); gallery.appendChild(article); });
+function hasFirebaseConfig() {
+    return !!window.firebaseConfig && window.firebaseConfig.projectId && !window.firebaseConfig.projectId.includes('YOUR_PROJECT');
+}
+if (hasFirebaseConfig()) firebase.initializeApp(window.firebaseConfig);
+const db = hasFirebaseConfig() ? firebase.firestore() : null;
+
+if (db) {
+    db.collection('content').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+        const gallery = document.getElementById('gallery');
+        const empty = document.getElementById('empty');
+        gallery.innerHTML = '';
+        const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(item => item.type === 'image');
+        empty.hidden = items.length > 0;
+        items.forEach(item => {
+            const article = document.createElement('article');
+            article.className = 'card image-card';
+            const img = document.createElement('img');
+            img.src = item.url;
+            img.alt = item.title;
+            const body = document.createElement('div');
+            body.className = 'card-body';
+            const title = document.createElement('h3');
+            title.textContent = item.title;
+            const date = document.createElement('span');
+            date.className = 'post-date';
+            date.textContent = item.date || 'Recently published';
+            body.append(title, date);
+            article.append(img, body);
+            gallery.appendChild(article);
+        });
+    });
+}
 </script>
-</body></html>
+</body>
+</html>
