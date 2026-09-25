@@ -3,25 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1a2a3a">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Messages - Imago Dei Prophetic Outreach</title>
-    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="mobile-nav.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="content-store.js"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(console.error));
-      }
-    </script>
+    <script src="nav.js" defer></script>
 </head>
 <body>
 <header>
@@ -37,27 +28,63 @@
         </nav>
     </div>
 </header>
+
 <section class="hero page-hero">
     <div class="container">
         <h1>Faith &amp; Encouragement</h1>
         <p>Read messages, prayer guides, and updates from Imago Dei.</p>
     </div>
 </section>
+
 <main class="content-section">
-    <div class="container">
-        <div class="section-title"><button id="recent-posts" type="button">Recent posts</button></div>
-        <div class="post-list" id="message-list"><p class="empty-state">No messages have been published yet.</p></div>
-    </div>
+    <div class="container post-list" id="message-list"></div>
 </main>
-<div class="host-menu" id="host-menu"><button id="host-toggle" type="button" aria-expanded="false">Host menu</button><div id="host-panel" hidden><p>Host controls</p><button id="host-login" type="button">Sign in to edit</button><span id="host-status"></span></div></div>
-<footer><div class="container"><p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p><p class="footer-sub">Reflecting the glory of God to the world</p></div></footer>
+
+<footer>
+    <div class="container">
+        <p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p>
+        <p class="footer-sub">Reflecting the glory of God to the world</p>
+    </div>
+</footer>
+
 <script>
-const list=document.getElementById('message-list'); let current=[];
-document.getElementById('recent-posts').onclick=()=>list.scrollIntoView({behavior:'smooth'});
-document.getElementById('host-toggle').onclick=()=>{const panel=document.getElementById('host-panel'); panel.hidden=!panel.hidden; document.getElementById('host-toggle').setAttribute('aria-expanded', String(!panel.hidden));};
-document.getElementById('host-login').onclick=async()=>{try { await ContentStore.hostLogin(); document.getElementById('host-status').textContent='Host mode enabled.'; render(); } catch (e) { document.getElementById('host-status').textContent=e.message; }};
-function render(){ list.innerHTML=''; if(!current.length){ list.innerHTML='<p class="empty-state">No messages have been published yet.</p>'; return; } current.forEach(item => { const article=document.createElement('article'); article.className='card blog-post'; const body=document.createElement('div'); body.className='card-body'; const date=document.createElement('span'); date.className='post-date'; date.textContent=item.date || 'Recently published'; const title=document.createElement('h2'); title.textContent=item.title || 'Untitled message'; const text=document.createElement('p'); text.textContent=item.body || ''; body.append(date, title, text); if(ContentStore.isHost()){ const tools=document.createElement('div'); tools.className='post-tools'; const edit=document.createElement('button'); edit.textContent='Edit'; edit.onclick=async()=>{ const titleValue=prompt('Message title', item.title || ''); const bodyValue=prompt('Message text', item.body || ''); if(titleValue!==null && bodyValue!==null){ await ContentStore.save({...item, title:titleValue, body:bodyValue}); } }; const del=document.createElement('button'); del.className='danger-button'; del.textContent='Delete'; del.onclick=()=>ContentStore.remove(item); tools.append(edit, del); body.append(tools); } article.append(body); list.append(article); }); }
-ContentStore.subscribe('message', items => { current = items; render(); });
+function hasFirebaseConfig() {
+    return !!window.firebaseConfig && window.firebaseConfig.projectId && !window.firebaseConfig.projectId.includes('YOUR_PROJECT');
+}
+if (hasFirebaseConfig()) firebase.initializeApp(window.firebaseConfig);
+const db = hasFirebaseConfig() ? firebase.firestore() : null;
+
+if (db) {
+    db.collection('content').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+        const list = document.getElementById('message-list');
+        list.innerHTML = '';
+        const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(item => item.type === 'message');
+        if (!items.length) {
+            const empty = document.createElement('p');
+            empty.className = 'empty-state';
+            empty.textContent = 'No messages have been published yet.';
+            list.appendChild(empty);
+            return;
+        }
+
+        items.forEach(item => {
+            const article = document.createElement('article');
+            article.className = 'card blog-post';
+            const body = document.createElement('div');
+            body.className = 'card-body';
+            const date = document.createElement('span');
+            date.className = 'post-date';
+            date.textContent = item.date || 'Recently published';
+            const title = document.createElement('h2');
+            title.textContent = item.title;
+            const text = document.createElement('p');
+            text.textContent = item.body;
+            body.append(date, title, text);
+            article.appendChild(body);
+            list.appendChild(article);
+        });
+    });
+}
 </script>
 </body>
 </html>
