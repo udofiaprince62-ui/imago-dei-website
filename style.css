@@ -8,6 +8,8 @@ body {
     min-height: 100vh;
     background: linear-gradient(180deg, #f7f4ee 0%, #f4f6f9 100%);
     color: var(--text-dark);
+    margin: 0;
+    font-family: 'Open Sans', sans-serif;
 }
 
 :root {
@@ -19,8 +21,30 @@ body {
     --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+* {
+    box-sizing: border-box;
+}
+
+img {
+    max-width: 100%;
+}
+
+h1, h2, h3, .logo {
+    font-family: 'Montserrat', sans-serif;
+}
+
 .container {
     width: min(1100px, 92%);
+    margin: 0 auto;
+}
+
+header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(255,255,255,0.96);
+    border-bottom: 1px solid rgba(26,42,58,0.08);
+    backdrop-filter: blur(6px);
 }
 
 .nav-container {
@@ -29,6 +53,22 @@ body {
     align-items: center;
     flex-wrap: wrap;
     gap: 12px;
+    min-height: 72px;
+}
+
+.logo {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+}
+
+.logo span {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent-color);
 }
 
 nav {
@@ -40,7 +80,18 @@ nav {
 }
 
 nav a {
-    margin-left: 0;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 8px 10px;
+    border-radius: 6px;
+    transition: 0.2s ease;
+}
+
+nav a:hover,
+nav a.active {
+    color: var(--accent-color);
+    background: rgba(212, 175, 55, 0.08);
 }
 
 .hero {
@@ -48,6 +99,16 @@ nav a {
     color: #ffffff;
     text-align: center;
     padding: 80px 20px;
+}
+
+.hero h1,
+.hero h2 {
+    margin: 0 0 12px;
+}
+
+.hero p {
+    margin: 0;
+    line-height: 1.6;
 }
 
 .section-title {
@@ -72,9 +133,88 @@ nav a {
     gap: 24px;
 }
 
+.card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card-body h2,
+.card-body h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+
+.card-body p {
+    line-height: 1.75;
+    color: var(--text-dark);
+    margin-bottom: 0;
+}
+
+.founder-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
+    gap: clamp(1rem, 2.5vw, 2rem);
+    align-items: stretch;
+}
+
+.founder-card,
+.founder-profile {
+    min-width: 0;
+    height: 100%;
+}
+
+.founder-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.founder-photo {
+    display: block;
+    width: min(100%, 280px);
+    height: auto;
+    max-height: 360px;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: 10px;
+    margin: 0 auto;
+}
+
+.founder-profile .card-body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.ministry-card {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+footer {
+    padding: 32px 0 40px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.footer-sub {
+    margin-top: 6px;
+    font-size: 0.9rem;
+}
+
 @media (max-width: 768px) {
     .nav-container {
         justify-content: center;
+        min-height: 64px;
     }
 
     nav {
@@ -94,14 +234,25 @@ nav a {
     .video-grid,
     .image-grid,
     .admin-grid,
-    .comments-layout {
+    .comments-layout,
+    .founder-layout {
         grid-template-columns: 1fr;
+    }
+
+    .founder-photo {
+        width: min(100%, 240px);
+        max-height: 280px;
+        aspect-ratio: 4 / 3;
+    }
+
+    .founder-profile .card-body {
+        display: block;
     }
 }
 
 @media (max-width: 480px) {
     header {
-        padding: 14px 0;
+        padding: 12px 0;
     }
 
     .container {
@@ -141,9 +292,13 @@ nav a {
         right: 12px;
         bottom: 12px;
     }
+
+    .founder-photo {
+        width: min(100%, 190px);
+        max-height: 230px;
+    }
 }
 
-header { position: sticky; top: 0; z-index: 1000; }
 .section-title button, .post-tools button, .host-menu button { margin: 8px 6px 0 0; }
 .post-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 .host-menu { position: fixed; right: 18px; bottom: 18px; z-index: 1100; background: rgba(26,42,58,.97); color: #fff; padding: 8px; border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,.25); }
@@ -151,15 +306,3 @@ header { position: sticky; top: 0; z-index: 1000; }
 .host-menu > div { min-width: 190px; padding: 8px; }
 .host-menu p { color: #fff; font-weight: 700; }
 .host-menu span { display: block; color: #f8e7a1; font-size: .8rem; margin-top: 8px; }
-
-.android-menu-toggle { display: none; }
-.android-menu { display: none; }
-@media (max-width: 768px) {
-  header .nav-container { justify-content: space-between; align-items: center; }
-  header nav { position: relative; width: auto; }
-  .android-menu-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin: 0; padding: 10px 14px; border: 1px solid var(--accent-color); border-radius: 6px; background: transparent; color: #fff; font: inherit; font-weight: 700; }
-  .android-menu { position: absolute; display: grid; right: 0; top: calc(100% + 8px); z-index: 1200; min-width: 210px; padding: 8px; border-radius: 8px; background: var(--primary-color); box-shadow: 0 6px 18px rgba(0,0,0,.3); }
-  .android-menu[hidden] { display: none; }
-  .android-menu a { display: block; margin: 0; padding: 13px 15px; color: #fff; text-decoration: none; border-radius: 4px; font-size: 1rem; }
-  .android-menu a:hover, .android-menu a.active { color: var(--accent-color); background: rgba(255,255,255,.08); }
-}
