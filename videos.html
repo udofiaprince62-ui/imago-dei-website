@@ -1,5 +1,67 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Videos - Imago Dei Prophetic Outreach</title><link rel="stylesheet" href="style.css"><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script><script src="firebase-config.js"></script><script src="content-store.js"></script></head>
-<body><header><div class="container nav-container"><a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a><nav aria-label="Main navigation"><a href="index.html">Home</a><a href="videos.html" class="active">Videos</a><a href="blogs.html">Messages</a><a href="gallery.html">Images</a><a href="admin.html">Publish</a><a href="about.html">About Us</a></nav></div></header><section class="hero page-hero"><div class="container"><h1>Prayer &amp; Adoration Videos</h1><p>Join us in prayer, worship, teaching, and prophetic encouragement.</p></div></section><main class="content-section"><div class="container"><div class="section-title"><h2>Latest Sessions</h2><button id="recent-posts" type="button">Recent posts</button></div><div id="video-list" class="video-grid"></div><p id="empty" class="empty-state">No uploaded videos yet.</p></div></main><div class="host-menu" id="host-menu"><button id="host-toggle" type="button" aria-expanded="false">Host menu</button><div id="host-panel" hidden><p>Host controls</p><button id="host-login" type="button">Sign in to edit</button><span id="host-status"></span></div></div><footer><div class="container"><p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p><p class="footer-sub">Reflecting the glory of God to the world</p></div></footer><script>
-const list=document.getElementById('video-list'),empty=document.getElementById('empty');let current=[];document.getElementById('recent-posts').onclick=()=>list.scrollIntoView({behavior:'smooth'});document.getElementById('host-toggle').onclick=()=>{const p=document.getElementById('host-panel');p.hidden=!p.hidden;};document.getElementById('host-login').onclick=async()=>{try{await ContentStore.hostLogin();document.getElementById('host-status').textContent='Host mode enabled.';render();}catch(e){document.getElementById('host-status').textContent=e.message;}};function render(){list.innerHTML='';empty.hidden=current.length>0;current.forEach(item=>{const article=document.createElement('article');article.className='card video-card';const frame=document.createElement('div');frame.className='video-frame';const video=document.createElement('video');video.controls=true;video.preload='metadata';video.src=item.url||item.src||'';frame.append(video);const body=document.createElement('div');body.className='card-body';const title=document.createElement('h3');title.textContent=item.title||'Untitled video';const date=document.createElement('span');date.className='post-date';date.textContent=item.date||'Recently published';const description=document.createElement('p');description.textContent=item.description||'';body.append(title,date,description);if(ContentStore.isHost()){const tools=document.createElement('div');tools.className='post-tools';const edit=document.createElement('button');edit.textContent='Edit';edit.onclick=async()=>{const t=prompt('Video title',item.title||''),d=prompt('Description',item.description||'');if(t!==null&&d!==null)await ContentStore.save({...item,title:t,description:d});};const del=document.createElement('button');del.className='danger-button';del.textContent='Delete';del.onclick=()=>ContentStore.remove(item);tools.append(edit,del);body.append(tools);}article.append(frame,body);list.append(article);});}ContentStore.subscribe('video',items=>{current=items;render();});
-</script></body></html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a2a3a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Videos - Imago Dei Prophetic Outreach</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="content-store.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(console.error));
+      }
+    </script>
+</head>
+<body>
+<header>
+    <div class="container nav-container">
+        <a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a>
+        <nav aria-label="Main navigation">
+            <a href="index.html">Home</a>
+            <a href="videos.html" class="active">Videos</a>
+            <a href="blogs.html">Messages</a>
+            <a href="gallery.html">Images</a>
+            <a href="admin.html">Publish</a>
+            <a href="about.html">About Us</a>
+        </nav>
+    </div>
+</header>
+<section class="hero page-hero">
+    <div class="container">
+        <h1>Prayer &amp; Adoration Videos</h1>
+        <p>Join us in prayer, worship, teaching, and prophetic encouragement.</p>
+    </div>
+</section>
+<main class="content-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Latest Sessions</h2>
+            <button id="recent-posts" type="button">Recent posts</button>
+        </div>
+        <div id="video-list" class="video-grid"></div>
+        <p id="empty" class="empty-state">No uploaded videos yet.</p>
+    </div>
+</main>
+<div class="host-menu" id="host-menu"><button id="host-toggle" type="button" aria-expanded="false">Host menu</button><div id="host-panel" hidden><p>Host controls</p><button id="host-login" type="button">Sign in to edit</button><span id="host-status"></span></div></div>
+<footer><div class="container"><p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p><p class="footer-sub">Reflecting the glory of God to the world</p></div></footer>
+<script>
+const list=document.getElementById('video-list'), empty=document.getElementById('empty'); let current=[];
+document.getElementById('recent-posts').onclick=()=>list.scrollIntoView({behavior:'smooth'});
+document.getElementById('host-toggle').onclick=()=>{const panel=document.getElementById('host-panel'); panel.hidden=!panel.hidden; document.getElementById('host-toggle').setAttribute('aria-expanded', String(!panel.hidden));};
+document.getElementById('host-login').onclick=async()=>{try { await ContentStore.hostLogin(); document.getElementById('host-status').textContent='Host mode enabled.'; render(); } catch (e) { document.getElementById('host-status').textContent=e.message; }};
+function render(){ list.innerHTML=''; empty.hidden=current.length>0; current.forEach(item => { const article=document.createElement('article'); article.className='card video-card'; const frame=document.createElement('div'); frame.className='video-frame'; const video=document.createElement('video'); video.controls=true; video.preload='metadata'; video.src=item.url || item.src || ''; frame.appendChild(video); const body=document.createElement('div'); body.className='card-body'; const title=document.createElement('h3'); title.textContent=item.title || 'Untitled video'; const date=document.createElement('span'); date.className='post-date'; date.textContent=item.date || 'Recently published'; const description=document.createElement('p'); description.textContent=item.description || ''; body.append(title, date, description); if(ContentStore.isHost()){ const tools=document.createElement('div'); tools.className='post-tools'; const edit=document.createElement('button'); edit.textContent='Edit'; edit.onclick=async()=>{ const titleValue=prompt('Video title', item.title || ''); const descValue=prompt('Description', item.description || ''); if(titleValue!==null && descValue!==null){ await ContentStore.save({...item, title:titleValue, description:descValue}); } }; const del=document.createElement('button'); del.className='danger-button'; del.textContent='Delete'; del.onclick=()=>ContentStore.remove(item); tools.append(edit, del); body.append(tools); } article.append(frame, body); list.appendChild(article); }); }
+ContentStore.subscribe('video', items => { current = items; render(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "Imago Dei Prophetic Outreach",
+  "short_name": "ImagoDei",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f7f4ee",
+  "theme_color": "#1a2a3a",
+  "description": "Prayer videos, messages, and images for Imago Dei Prophetic Outreach.",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
