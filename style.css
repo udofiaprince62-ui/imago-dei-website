@@ -72,6 +72,35 @@ nav a {
     gap: 24px;
 }
 
+.founder-layout {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.2fr);
+    gap: 24px;
+    align-items: stretch;
+}
+
+.founder-card,
+.founder-profile {
+    height: 100%;
+}
+
+.founder-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+}
+
+.founder-photo {
+    display: block;
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
 @media (max-width: 768px) {
     .nav-container {
         justify-content: center;
@@ -96,6 +125,15 @@ nav a {
     .admin-grid,
     .comments-layout {
         grid-template-columns: 1fr;
+    }
+
+    .founder-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .founder-photo {
+        max-width: 100%;
+        aspect-ratio: 16 / 11;
     }
 }
 
@@ -141,6 +179,14 @@ nav a {
         right: 12px;
         bottom: 12px;
     }
+
+    .founder-layout {
+        gap: 16px;
+    }
+
+    .founder-photo {
+        aspect-ratio: 4 / 3;
+    }
 }
 
 header { position: sticky; top: 0; z-index: 1000; }
@@ -157,8 +203,8 @@ header { position: sticky; top: 0; z-index: 1000; }
 @media (max-width: 768px) {
   header .nav-container { justify-content: space-between; align-items: center; }
   header nav { position: relative; width: auto; }
-  .android-menu-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin: 0; padding: 10px 14px; border: 1px solid var(--accent-color); border-radius: 6px; background: transparent; color: #fff; font: inherit; font-weight: 700; }
-  .android-menu { position: absolute; display: grid; right: 0; top: calc(100% + 8px); z-index: 1200; min-width: 210px; padding: 8px; border-radius: 8px; background: var(--primary-color); box-shadow: 0 6px 18px rgba(0,0,0,.3); }
+  .android-menu-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin: 0; padding: 10px 14px; border: 1px solid var(--accent-color); border-radius: 6px; background: var(--primary-color); color: #fff; }
+  .android-menu { position: absolute; display: grid; right: 0; top: calc(100% + 8px); z-index: 1200; min-width: 210px; padding: 8px; border-radius: 8px; background: var(--primary-color); box-shadow: 0 8px 22px rgba(0,0,0,.22); }
   .android-menu[hidden] { display: none; }
   .android-menu a { display: block; margin: 0; padding: 13px 15px; color: #fff; text-decoration: none; border-radius: 4px; font-size: 1rem; }
   .android-menu a:hover, .android-menu a.active { color: var(--accent-color); background: rgba(255,255,255,.08); }
