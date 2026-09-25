@@ -1,0 +1,9 @@
+/* Always-visible site header */
+header { position: sticky; top: 0; z-index: 1000; }
+.section-title button, .post-tools button, .host-menu button { margin: 8px 6px 0 0; }
+.post-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.host-menu { position: fixed; right: 18px; bottom: 18px; z-index: 1100; background: rgba(26,42,58,.97); color: #fff; padding: 8px; border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,.25); }
+.host-menu > button { margin: 0; background: var(--accent-color); }
+.host-menu > div { min-width: 190px; padding: 8px; }
+.host-menu p { color: #fff; font-weight: 700; }
+.host-menu span { display: block; color: #f8e7a1; font-size: .8rem; margin-top: 8px; }
