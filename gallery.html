@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Images - Imago Dei Prophetic Outreach</title>
+    <title>Videos - Imago Dei Prophetic Outreach</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="mobile-nav.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,6 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
+    <script src="content-store.js"></script>
     <script src="nav.js" defer></script>
 </head>
 <body>
@@ -20,9 +21,9 @@
         <a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a>
         <nav aria-label="Main navigation">
             <a href="index.html">Home</a>
-            <a href="videos.html">Videos</a>
+            <a href="videos.html" class="active">Videos</a>
             <a href="blogs.html">Messages</a>
-            <a href="gallery.html" class="active">Images</a>
+            <a href="gallery.html">Images</a>
             <a href="admin.html">Publish</a>
             <a href="about.html">About Us</a>
         </nav>
@@ -31,15 +32,19 @@
 
 <section class="hero page-hero">
     <div class="container">
-        <h1>Ministry Images</h1>
-        <p>Photos and images shared by the ministry.</p>
+        <h1>Prayer &amp; Adoration Videos</h1>
+        <p>Join us in prayer, worship, teaching, and prophetic encouragement.</p>
     </div>
 </section>
 
 <main class="content-section">
     <div class="container">
-        <div id="gallery" class="image-grid"></div>
-        <p id="empty" class="empty-state">No images have been published yet.</p>
+        <div class="section-title">
+            <h2>Latest Sessions</h2>
+            <p>New sessions published from the admin page appear here.</p>
+        </div>
+        <div id="video-list" class="video-grid"></div>
+        <p id="empty" class="empty-state">No uploaded videos yet. The host can publish one from the Publish page.</p>
     </div>
 </main>
 
@@ -51,37 +56,57 @@
 </footer>
 
 <script>
-function hasFirebaseConfig() {
-    return !!window.firebaseConfig && window.firebaseConfig.projectId && !window.firebaseConfig.projectId.includes('YOUR_PROJECT');
-}
-if (hasFirebaseConfig()) firebase.initializeApp(window.firebaseConfig);
-const db = hasFirebaseConfig() ? firebase.firestore() : null;
+function renderVideos(items) {
+    const list = document.getElementById('video-list');
+    const empty = document.getElementById('empty');
+    if (!list) return;
 
-if (db) {
-    db.collection('content').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
-        const gallery = document.getElementById('gallery');
-        const empty = document.getElementById('empty');
-        gallery.innerHTML = '';
-        const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(item => item.type === 'image');
-        empty.hidden = items.length > 0;
-        items.forEach(item => {
-            const article = document.createElement('article');
-            article.className = 'card image-card';
-            const img = document.createElement('img');
-            img.src = item.url;
-            img.alt = item.title;
-            const body = document.createElement('div');
-            body.className = 'card-body';
-            const title = document.createElement('h3');
-            title.textContent = item.title;
-            const date = document.createElement('span');
-            date.className = 'post-date';
-            date.textContent = item.date || 'Recently published';
-            body.append(title, date);
-            article.append(img, body);
-            gallery.appendChild(article);
-        });
+    list.innerHTML = '';
+    const normalized = (items || []).filter(item => (window.ContentStore ? window.ContentStore.normalise(item).type : item.type) === 'video');
+    empty.hidden = normalized.length > 0;
+
+    normalized.forEach(item => {
+        const article = document.createElement('article');
+        article.className = 'card video-card';
+
+        const frame = document.createElement('div');
+        frame.className = 'video-frame';
+
+        const video = document.createElement('video');
+        video.controls = true;
+        video.preload = 'metadata';
+        video.src = item.url;
+        video.setAttribute('aria-label', item.title || 'Video');
+        frame.appendChild(video);
+
+        const body = document.createElement('div');
+        body.className = 'card-body';
+
+        const title = document.createElement('h3');
+        title.textContent = item.title || 'Untitled video';
+
+        const date = document.createElement('span');
+        date.className = 'post-date';
+        date.textContent = item.date || 'Recently published';
+
+        const description = document.createElement('p');
+        description.textContent = item.description || '';
+
+        body.append(title, date, description);
+        article.append(frame, body);
+        list.appendChild(article);
     });
+}
+
+if (window.ContentStore) {
+    window.ContentStore.subscribe('video', renderVideos);
+} else {
+    try {
+        const localItems = JSON.parse(localStorage.getItem('imago-dei-content') || '[]');
+        renderVideos(localItems);
+    } catch (error) {
+        renderVideos([]);
+    }
 }
 </script>
 </body>
