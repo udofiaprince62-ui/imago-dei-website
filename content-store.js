@@ -1,160 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Publish Content - Imago Dei</title>
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="mobile-nav.css">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="content-store.js"></script>
-<script src="nav.js" defer></script>
-</head>
-<body>
-<header><div class="container nav-container"><a href="index.html" class="logo">Imago Dei <span>Prophetic Outreach</span></a><nav aria-label="Main navigation"><a href="index.html">Home</a><a href="videos.html">Videos</a><a href="blogs.html">Messages</a><a href="gallery.html">Images</a><a href="admin.html" class="active">Publish</a><a href="about.html">About Us</a></nav></div></header>
-<section class="hero page-hero"><div class="container"><h1>Publish Ministry Content</h1><p>Share prayer videos, photos, and messages with your community.</p></div></section>
-<main class="content-section"><div class="container admin-page">
-<div id="admin-status" class="form-status" role="status" aria-live="polite"></div>
-<div class="notice warning"><strong>Current mode:</strong> <span id="mode">Checking setup...</span></div>
-<div class="admin-grid">
-<section class="card card-body"><h2>Upload a video</h2><p class="helper-text">MP4, WebM, or OGG. Keep files under 20 MB.</p><form id="video-form"><label for="video-title">Video title</label><input id="video-title" type="text" required><label for="video-description">Short description</label><textarea id="video-description" rows="3"></textarea><label for="video-file">Choose video</label><input id="video-file" type="file" accept="video/*" required><button type="submit">Publish video</button></form></section>
-<section class="card card-body"><h2>Upload a picture</h2><p class="helper-text">JPG, PNG, GIF, or WebP. Keep files under 2 MB.</p><form id="image-form"><label for="image-title">Picture title</label><input id="image-title" type="text" required><label for="image-file">Choose image</label><input id="image-file" type="file" accept="image/*" required><button type="submit">Publish image</button></form></section>
-<section class="card card-body"><h2>Post a message</h2><p class="helper-text">Share an encouragement, announcement, or prayer point.</p><form id="message-form"><label for="message-title">Message title</label><input id="message-title" type="text" required><label for="message-body">Message</label><textarea id="message-body" rows="6" required></textarea><button type="submit">Publish message</button></form></section>
-</div></div></main>
-<footer><div class="container"><p>&copy; Imago Dei Prophetic Outreach. All rights reserved.</p><p class="footer-sub">Reflecting the glory of God to the world</p></div></footer>
-<script>
-const status = (message) => {
-  const el = document.getElementById('admin-status');
-  if (el) el.textContent = message;
-};
+(function () {
+  const config = window.firebaseConfig || {};
+  const configured = Boolean(config.projectId && !String(config.projectId).includes('YOUR_PROJECT'));
+  let db = null;
+  let storage = null;
 
-const configured = !!window.firebaseConfig && !!window.firebaseConfig.projectId && !String(window.firebaseConfig.projectId).includes('YOUR_PROJECT');
-let db = null;
-let storage = null;
-
-if (configured && window.firebase) {
-  if (!firebase.apps.length) firebase.initializeApp(window.firebaseConfig);
-  db = firebase.firestore();
-  storage = firebase.storage ? firebase.storage() : null;
-  document.getElementById('mode').textContent = 'Firebase shared mode.';
-} else {
-  document.getElementById('mode').textContent = 'Local browser mode. Add Firebase values to enable shared publishing.';
-}
-
-const readAll = () => {
-  try {
-    return JSON.parse(localStorage.getItem('imago-dei-content') || '[]');
-  } catch (error) {
-    return [];
-  }
-};
-
-const writeAll = (value) => {
-  localStorage.setItem('imago-dei-content', JSON.stringify(value));
-};
-
-const date = () => new Date().toLocaleDateString();
-const dataUrl = (file) => new Promise((resolve, reject) => {
-  const r = new FileReader();
-  r.onload = () => resolve(r.result);
-  r.onerror = reject;
-  r.readAsDataURL(file);
-});
-
-async function upload(file, folder) {
-  const ref = storage.ref(`${folder}/${Date.now()}-${file.name}`);
-  const snap = await ref.put(file);
-  return snap.ref.getDownloadURL();
-}
-
-async function publish(type, item, file, folder) {
-  const itemWithType = {
-    ...item,
-    type,
-    createdAt: Date.now(),
-    date: item.date || date()
-  };
-
-  if (!configured) {
-    if (file) itemWithType.src = await dataUrl(file);
-    const values = readAll();
-    values.unshift(itemWithType);
-    writeAll(values);
-    return itemWithType;
+  if (configured && window.firebase) {
+    if (!firebase.apps.length) firebase.initializeApp(config);
+    db = firebase.firestore();
+    storage = firebase.storage ? firebase.storage() : null;
   }
 
-  if (file) itemWithType.url = await upload(file, folder);
-  await db.collection('content').add({ ...itemWithType, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-  return itemWithType;
-}
-
-function busy(form, value) {
-  form.querySelector('button').disabled = value;
-}
-
-document.getElementById('video-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const form = e.target;
-  const file = document.getElementById('video-file').files[0];
-  if (!file) return;
-
-  busy(form, true);
-  try {
-    await publish('video', {
-      title: document.getElementById('video-title').value,
-      description: document.getElementById('video-description').value,
-      date: date()
-    }, file, 'videos');
-    status('Video published.');
-    form.reset();
-  } catch (error) {
-    status('Publish failed: ' + error.message);
-  } finally {
-    busy(form, false);
+  const key = 'imago-dei-content';
+  const resetKey = 'imago-dei-content-reset-v2';
+  if (!localStorage.getItem(resetKey)) {
+    [key, 'imago-dei-video', 'imago-dei-videos', 'imago-dei-image', 'imago-dei-images', 'imago-dei-message', 'imago-dei-messages'].forEach(k => localStorage.removeItem(k));
+    localStorage.setItem(resetKey, 'done');
   }
-});
 
-document.getElementById('image-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const form = e.target;
-  const file = document.getElementById('image-file').files[0];
-  if (!file) return;
-
-  busy(form, true);
-  try {
-    await publish('image', {
-      title: document.getElementById('image-title').value,
-      date: date()
-    }, file, 'images');
-    status('Image published.');
-    form.reset();
-  } catch (error) {
-    status('Publish failed: ' + error.message);
-  } finally {
-    busy(form, false);
+  function readLocal() {
+    try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch (_) { return []; }
   }
-});
-
-document.getElementById('message-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const form = e.target;
-
-  busy(form, true);
-  try {
-    await publish('message', {
-      title: document.getElementById('message-title').value,
-      body: document.getElementById('message-body').value,
-      date: date()
-    }, null, 'messages');
-    status('Message published.');
-    form.reset();
-  } catch (error) {
-    status('Publish failed: ' + error.message);
-  } finally {
-    busy(form, false);
+  function writeLocal(items) { localStorage.setItem(key, JSON.stringify(items)); }
+  function normalise(item) {
+    const value = { ...(item || {}) };
+    const types = { videos: 'video', images: 'image', messages: 'message' };
+    value.type = types[value.type] || value.type || 'message';
+    value.createdAt = value.createdAt || Date.now();
+    value.date = value.date || 'Recently published';
+    return value;
   }
-});
-</script></body></html>
+  function sorted(items) { return items.map(normalise).sort((a, b) => Number(b.createdAt) - Number(a.createdAt)); }
+
+  function subscribe(type, render, onError) {
+    if (db) {
+      return db.collection('content').orderBy('createdAt', 'desc').onSnapshot(
+        snapshot => render(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(item => normalise(item).type === type)),
+        error => { console.error(error); render([]); if (onError) onError(error); }
+      );
+    }
+    render(sorted(readLocal().filter(item => normalise(item).type === type)));
+    return () => {};
+  }
+
+  const dataUrl = file => new Promise((resolve, reject) => {
+    const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file);
+  });
+
+  async function publish(type, item, file, folder) {
+    const value = { ...item, type: normalise({ type }).type, date: item.date || new Date().toLocaleDateString() };
+    if (db) {
+      if (file && storage) {
+        const path = `${folder}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
+        const uploaded = await storage.ref(path).put(file);
+        value.url = await uploaded.ref.getDownloadURL(); value.storagePath = path;
+      }
+      return db.collection('content').add({ ...value, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    }
+    const local = { ...value, id: `${value.type}-${Date.now()}`, createdAt: Date.now() };
+    if (file) local.url = await dataUrl(file);
+    writeLocal([local, ...readLocal()]); return local;
+  }
+
+  async function remove(item) {
+    if (!window.confirm(`Delete “${item.title || 'this post'}”?`)) return false;
+    if (db) await db.collection('content').doc(item.id).delete();
+    else writeLocal(readLocal().filter(value => value.id !== item.id));
+    return true;
+  }
+
+  async function removeAll() {
+    if (!window.confirm('Delete every published post, video, and image? This cannot be undone.')) return false;
+    if (db) {
+      const snapshot = await db.collection('content').get();
+      const batch = db.batch(); snapshot.docs.forEach(doc => batch.delete(doc.ref)); await batch.commit();
+    }
+    writeLocal([]);
+    return true;
+  }
+
+  window.ContentStore = { configured, db, storage, readLocal, writeLocal, normalise, subscribe, publish, remove, removeAll };
+})();
