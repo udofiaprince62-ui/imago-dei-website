@@ -1,0 +1,1 @@
+const v=document.createElement('link');v.rel='stylesheet';v.href='mobile-nav.css';document.head.appendChild(v);
